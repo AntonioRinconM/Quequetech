@@ -21,19 +21,22 @@
 }
 
 .logo img {
-  width: 90PX;
-  height: 110px;
+  width: 150px;
+  height: auto;
   border-radius: 16px;
+  padding-right: 40px;
 }
 
 .logo-texto {
   display: flex;
   flex-direction: column;
+  font-size: 1.50rem;
   line-height: 1.1;
+  text-transform: uppercase;
 }
 
 .logo-texto strong {
-  font-size: 1.25rem;
+  font-size: 1.95rem;
   letter-spacing: 0.08em;
   color: #dfefff;
 }

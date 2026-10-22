@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 $servidor = 'localhost';
 $puerto = 3306;
-$base_datos = 'quequetech';
+$base_datos = 'quequetecnotech';
 $usuario = 'root';
 $contrasena = '';
 

@@ -4,29 +4,78 @@ require_once __DIR__ . '/conexion.php';
 $mensaje = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nombre = isset($_POST['nombre']) && is_string($_POST['nombre']) ? trim($_POST['nombre']) : '';
-    $rol = isset($_POST['rol']) && is_string($_POST['rol']) ? trim($_POST['rol']) : '';
-    $telefono = isset($_POST['telefono']) && is_string($_POST['telefono']) ? trim($_POST['telefono']) : '';
+    $campos = [
+        'nro_legajo' => 20,
+        'nombre' => 50,
+        'apellido' => 50,
+        'dni' => 15,
+        'domicilio' => 100,
+        'telefono' => 20,
+        'email' => 100,
+        'cargo' => 50,
+        'area' => 50,
+    ];
+    $datos = [];
+    foreach ($campos as $campo => $maximo) {
+        $valor = isset($_POST[$campo]) && is_string($_POST[$campo]) ? trim($_POST[$campo]) : '';
+        $largo = function_exists('mb_strlen') ? mb_strlen($valor, 'UTF-8') : strlen($valor);
+        if ($largo > $maximo) {
+            $mensaje = 'El campo ' . $campo . ' supera el largo permitido.';
+            break;
+        }
+        $datos[$campo] = $valor;
+    }
+    $fecha_nacimiento = isset($_POST['fecha_nacimiento']) && is_string($_POST['fecha_nacimiento'])
+        ? trim($_POST['fecha_nacimiento'])
+        : '';
+    $fecha_ingreso = isset($_POST['fecha_ingreso']) && is_string($_POST['fecha_ingreso'])
+        ? trim($_POST['fecha_ingreso'])
+        : '';
     $estado = isset($_POST['estado']) && is_string($_POST['estado']) ? trim($_POST['estado']) : '';
+    $fecha_valida = static function (string $fecha): bool {
+        if ($fecha === '') {
+            return true;
+        }
+        $partes = explode('-', $fecha);
+        return count($partes) === 3
+            && checkdate((int) $partes[1], (int) $partes[2], (int) $partes[0])
+            && sprintf('%04d-%02d-%02d', (int) $partes[0], (int) $partes[1], (int) $partes[2]) === $fecha;
+    };
 
-    if ($nombre === '' || $rol === '' || !in_array($estado, ['Activo', 'Pendiente', 'Inactivo'], true)) {
-        $mensaje = 'Completa el nombre y el rol, y selecciona un estado válido.';
-    } elseif (
-        (function_exists('mb_strlen') ? mb_strlen($nombre, 'UTF-8') : strlen($nombre)) > 120
-        || (function_exists('mb_strlen') ? mb_strlen($rol, 'UTF-8') : strlen($rol)) > 80
-        || (function_exists('mb_strlen') ? mb_strlen($telefono, 'UTF-8') : strlen($telefono)) > 40
-    ) {
-        $mensaje = 'Uno o más campos superan el largo permitido.';
-    } else {
+    if ($mensaje === '' && (
+        $datos['nro_legajo'] === ''
+        || $datos['nombre'] === ''
+        || $datos['apellido'] === ''
+        || $datos['dni'] === ''
+        || !in_array($estado, ['Activo', 'Pendiente', 'Inactivo'], true)
+    )) {
+        $mensaje = 'Completa legajo, nombre, apellido y DNI, y selecciona un estado válido.';
+    }
+
+    if ($mensaje === '' && (!$fecha_valida($fecha_nacimiento) || !$fecha_valida($fecha_ingreso))) {
+        $mensaje = 'Ingresa fechas válidas.';
+    }
+
+    if ($mensaje === '') {
         $guardar = $conexion->prepare(
-            'INSERT INTO empleados (nombre, rol, telefono, estado) VALUES (:nombre, :rol, :telefono, :estado)'
+            'INSERT INTO personal (
+                nro_legajo, nombre, apellido, dni, fecha_nacimiento, domicilio, telefono,
+                email, cargo, area, fecha_ingreso, estado
+            ) VALUES (
+                :nro_legajo, :nombre, :apellido, :dni, :fecha_nacimiento, :domicilio, :telefono,
+                :email, :cargo, :area, :fecha_ingreso, :estado
+            )'
         );
-        $guardar->execute([
-            'nombre' => $nombre,
-            'rol' => $rol,
-            'telefono' => $telefono !== '' ? $telefono : null,
+        $guardar->execute(array_replace($datos, [
+            'fecha_nacimiento' => $fecha_nacimiento !== '' ? $fecha_nacimiento : null,
+            'fecha_ingreso' => $fecha_ingreso !== '' ? $fecha_ingreso : null,
+            'domicilio' => $datos['domicilio'] !== '' ? $datos['domicilio'] : null,
+            'telefono' => $datos['telefono'] !== '' ? $datos['telefono'] : null,
+            'email' => $datos['email'] !== '' ? $datos['email'] : null,
+            'cargo' => $datos['cargo'] !== '' ? $datos['cargo'] : null,
+            'area' => $datos['area'] !== '' ? $datos['area'] : null,
             'estado' => $estado,
-        ]);
+        ]));
 
         header('Location: personal.php?guardado=1');
         exit;
@@ -34,11 +83,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 if (isset($_GET['guardado'])) {
-    $mensaje = 'El empleado se guardó correctamente.';
+    $mensaje = 'El registro de personal se guardó correctamente.';
 }
 
 $empleados = $conexion->query(
-    'SELECT nombre, rol, telefono, estado FROM empleados ORDER BY nombre'
+    'SELECT nro_legajo, nombre, apellido, dni, fecha_nacimiento, domicilio, telefono,
+            email, cargo, area, fecha_ingreso, estado
+     FROM personal
+     ORDER BY apellido, nombre'
 )->fetchAll();
 ?>
 <!DOCTYPE html>
@@ -71,7 +123,7 @@ $empleados = $conexion->query(
     <main class="contenedor seccion">
         <div class="seccion-titulo">
             <h2>Administración del personal</h2>
-            <p>Gestión del legajo, roles y situación del equipo de trabajo.</p>
+            <p>Administración de legajos y datos personales del equipo.</p>
         </div>
 
         <?php if ($mensaje !== ''): ?>
@@ -83,16 +135,44 @@ $empleados = $conexion->query(
                 <h3>Registrar empleado</h3>
                 <form method="post" action="personal.php">
                     <div class="entrada">
-                        <label for="nombreEmpleado">Nombre completo</label>
-                        <input id="nombreEmpleado" name="nombre" type="text" maxlength="120" required placeholder="Ej: Martín Ortega">
+                        <label for="nombre">Nombre</label>
+                        <input id="nombre" name="nombre" type="text" maxlength="50" required>
                     </div>
                     <div class="entrada">
-                        <label for="rolEmpleado">Rol</label>
-                        <input id="rolEmpleado" name="rol" type="text" maxlength="80" required placeholder="Ej: Técnico">
+                        <label for="apellido">Apellido</label>
+                        <input id="apellido" name="apellido" type="text" maxlength="50" required>
                     </div>
                     <div class="entrada">
-                        <label for="telefonoEmpleado">Teléfono</label>
-                        <input id="telefonoEmpleado" name="telefono" type="tel" maxlength="40" placeholder="Ej: +54 11 2222-3333">
+                        <label for="dni">DNI</label>
+                        <input id="dni" name="dni" type="text" maxlength="15" required>
+                    </div>
+                    <div class="entrada">
+                        <label for="fechaNacimiento">Fecha de nacimiento</label>
+                        <input id="fechaNacimiento" name="fecha_nacimiento" type="date">
+                    </div>
+                    <div class="entrada">
+                        <label for="domicilio">Domicilio</label>
+                        <input id="domicilio" name="domicilio" type="text" maxlength="100">
+                    </div>
+                    <div class="entrada">
+                        <label for="telefono">Teléfono</label>
+                        <input id="telefono" name="telefono" type="tel" maxlength="20">
+                    </div>
+                    <div class="entrada">
+                        <label for="email">Correo electrónico</label>
+                        <input id="email" name="email" type="email" maxlength="100">
+                    </div>
+                    <div class="entrada">
+                        <label for="cargo">Cargo</label>
+                        <input id="cargo" name="cargo" type="text" maxlength="50">
+                    </div>
+                    <div class="entrada">
+                        <label for="area">Área</label>
+                        <input id="area" name="area" type="text" maxlength="50">
+                    </div>
+                    <div class="entrada">
+                        <label for="fechaIngreso">Fecha de ingreso</label>
+                        <input id="fechaIngreso" name="fecha_ingreso" type="date">
                     </div>
                     <div class="entrada">
                         <label for="estadoEmpleado">Estado</label>
@@ -103,28 +183,37 @@ $empleados = $conexion->query(
                         </select>
                     </div>
                     <div class="acciones">
-                        <button type="submit" class="boton boton-primario">Guardar legajo</button>
+                        <button type="submit" class="boton boton-primario">Guardar personal</button>
                     </div>
                 </form>
             </section>
 
             <section class="tarjeta">
-                <h3>Equipo actual</h3>
+                <h3>Personal registrado</h3>
                 <div class="tabla-contenedor">
                     <table class="tabla">
-                        <thead><tr><th>Nombre</th><th>Rol</th><th>Teléfono</th><th>Estado</th></tr></thead>
+                        <thead><tr><th>Legajo</th><th>Nombre</th><th>Apellido</th><th>DNI</th><th>Nacimiento</th><th>Domicilio</th><th>Teléfono</th><th>Email</th><th>Cargo</th><th>Área</th><th>Ingreso</th><th>Estado</th></tr></thead>
                         <tbody>
                             <?php foreach ($empleados as $empleado): ?>
-                                <?php $estado_css = strtolower(str_replace(' ', '-', $empleado['estado'])); ?>
+                                <?php $estado = $empleado['estado'] ?? 'Sin estado'; ?>
+                                <?php $estado_css = strtolower(str_replace(' ', '-', $estado)); ?>
                                 <tr>
+                                    <td><?php echo htmlspecialchars($empleado['nro_legajo'], ENT_QUOTES, 'UTF-8'); ?></td>
                                     <td><?php echo htmlspecialchars($empleado['nombre'], ENT_QUOTES, 'UTF-8'); ?></td>
-                                    <td><?php echo htmlspecialchars($empleado['rol'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td><?php echo htmlspecialchars($empleado['apellido'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td><?php echo htmlspecialchars($empleado['dni'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td><?php echo htmlspecialchars($empleado['fecha_nacimiento'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td><?php echo htmlspecialchars($empleado['domicilio'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                                     <td><?php echo htmlspecialchars($empleado['telefono'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
-                                    <td><span class="estado <?php echo htmlspecialchars($estado_css, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($empleado['estado'], ENT_QUOTES, 'UTF-8'); ?></span></td>
+                                    <td><?php echo htmlspecialchars($empleado['email'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td><?php echo htmlspecialchars($empleado['cargo'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td><?php echo htmlspecialchars($empleado['area'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td><?php echo htmlspecialchars($empleado['fecha_ingreso'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td><span class="estado <?php echo htmlspecialchars($estado_css, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($estado, ENT_QUOTES, 'UTF-8'); ?></span></td>
                                 </tr>
                             <?php endforeach; ?>
                             <?php if ($empleados === []): ?>
-                                <tr><td colspan="4">No hay empleados registrados.</td></tr>
+                                <tr><td colspan="12">No hay personal registrado.</td></tr>
                             <?php endif; ?>
                         </tbody>
                     </table>

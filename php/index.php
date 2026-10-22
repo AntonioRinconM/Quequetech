@@ -2,17 +2,19 @@
 require_once __DIR__ . '/conexion.php';
 
 $estado_base = 'Conectado';
-$total_personal = (int) $conexion->query('SELECT COUNT(*) FROM empleados')->fetchColumn();
+$total_personal = (int) $conexion->query('SELECT COUNT(*) FROM personal')->fetchColumn();
 $total_tareas = (int) $conexion->query('SELECT COUNT(*) FROM tareas')->fetchColumn();
-$total_roles = (int) $conexion->query('SELECT COUNT(*) FROM roles')->fetchColumn();
+$total_cuentas = (int) $conexion->query('SELECT COUNT(*) FROM empleados')->fetchColumn();
 $empleados = $conexion->query(
-    'SELECT nombre, rol, estado, telefono FROM empleados ORDER BY nombre LIMIT 4'
+    'SELECT nombre, apellido, cargo AS rol, estado, telefono
+     FROM personal
+     ORDER BY apellido, nombre
+     LIMIT 4'
 )->fetchAll();
 $proyectos = $conexion->query(
-    'SELECT t.titulo, c.nombre AS cliente, t.estado, t.fecha
+    'SELECT t.titulo, t.cliente, t.estado, t.fecha_vencimiento AS fecha
      FROM tareas t
-     INNER JOIN clientes c ON c.id = t.cliente_id
-     ORDER BY t.fecha DESC, t.id DESC
+     ORDER BY t.fecha_solicitud DESC, t.id_tarea DESC
      LIMIT 3'
 )->fetchAll();
 ?>
@@ -79,8 +81,8 @@ $proyectos = $conexion->query(
                                 <span>Tareas</span>
                             </div>
                             <div class="metric-card">
-                                <strong><?php echo $total_roles; ?></strong>
-                                <span>Roles</span>
+                                <strong><?php echo $total_cuentas; ?></strong>
+                                <span>Cuentas</span>
                             </div>
                             <div class="metric-card">
                                 <strong>24/7</strong>
@@ -182,10 +184,10 @@ $proyectos = $conexion->query(
                         <tbody>
                             <?php foreach ($empleados as $empleado): ?>
                                 <tr>
-                                    <td><?php echo htmlspecialchars($empleado['nombre']); ?></td>
-                                    <td><?php echo htmlspecialchars($empleado['rol']); ?></td>
-                                    <td><span class="estado <?php echo strtolower(str_replace(' ', '-', $empleado['estado'])); ?>"><?php echo htmlspecialchars($empleado['estado']); ?></span></td>
-                                    <td><?php echo htmlspecialchars($empleado['telefono']); ?></td>
+                                    <td><?php echo htmlspecialchars($empleado['nombre'] . ' ' . $empleado['apellido'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td><?php echo htmlspecialchars($empleado['rol'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td><span class="estado <?php echo htmlspecialchars(strtolower(str_replace(' ', '-', $empleado['estado'] ?? '')), ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($empleado['estado'] ?? '', ENT_QUOTES, 'UTF-8'); ?></span></td>
+                                    <td><?php echo htmlspecialchars($empleado['telefono'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -220,11 +222,11 @@ $proyectos = $conexion->query(
                         </thead>
                         <tbody>
                             <?php foreach ($proyectos as $tarea): ?>
-                                <tr data-estado="<?php echo strtolower($tarea['estado']); ?>">
-                                    <td><?php echo htmlspecialchars($tarea['titulo']); ?></td>
-                                    <td><?php echo htmlspecialchars($tarea['cliente']); ?></td>
-                                    <td><span class="estado <?php echo strtolower(str_replace(' ', '-', $tarea['estado'])); ?>"><?php echo htmlspecialchars($tarea['estado']); ?></span></td>
-                                    <td><?php echo htmlspecialchars($tarea['fecha']); ?></td>
+                                <tr data-estado="<?php echo htmlspecialchars(strtolower($tarea['estado'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
+                                    <td><?php echo htmlspecialchars($tarea['titulo'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td><?php echo htmlspecialchars($tarea['cliente'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td><span class="estado <?php echo htmlspecialchars(strtolower(str_replace(' ', '-', $tarea['estado'] ?? '')), ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($tarea['estado'] ?? '', ENT_QUOTES, 'UTF-8'); ?></span></td>
+                                    <td><?php echo htmlspecialchars($tarea['fecha'] ?? 'Sin fecha', ENT_QUOTES, 'UTF-8'); ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
