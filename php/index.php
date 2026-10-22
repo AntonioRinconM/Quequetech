@@ -22,13 +22,17 @@ $proyectos = $conexion->query(
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>quequetech Technologies inc.</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../css/Base.css">
+    <link rel="stylesheet" href="../css/Layout.css">
+    <link rel="stylesheet" href="../css/Inicio.css">
+    <link rel="stylesheet" href="../css/Servicios.css">
+    <link rel="stylesheet" href="../css/Tareas.css">
 </head>
 <body>
     <header class="encabezado">
         <div class="contenedor">
             <div class="logo">
-                <img src="quequetechlogo.png">
+                <img src="../images/ico.png" alt="Logo de quequetech">
                 <div class="logo-texto">
                     <strong>Quequetech</strong>
                     <span>Technologies inc.</span>
@@ -36,7 +40,7 @@ $proyectos = $conexion->query(
             </div>
             <nav class="menu">
                 <a class="activo" href="index.php">Inicio</a>
-                <a href="servicios.html">Servicios</a>
+                <a href="../servicios.html">Servicios</a>
                 <a href="personal.php">Personal</a>
                 <a href="acceso.php">Acceso</a>
                 <a href="tareas.php">Tareas</a>
@@ -56,14 +60,14 @@ $proyectos = $conexion->query(
                     </p>
                     <div class="acciones">
                         <a href="#gestion" class="boton boton-primario">Ver gestión</a>
-                        <a href="servicios.html" class="boton boton-secundario">Ver servicios</a>
+                        <a href="../servicios.html" class="boton boton-secundario">Ver servicios</a>
                     </div>
                 </div>
 
                 <aside class="hero-panel">
                     <div class="panel-miniatura">
                         <div class="miniatura">
-                            <img src="quequetechlogo.png" alt="Logo de quequetech">
+                            <img src="../images/quequetechlogo.png" alt="Logo de quequetech">
                         </div>
                         <div class="lista-metrica">
                             <div class="metric-card">

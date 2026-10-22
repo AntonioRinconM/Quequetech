@@ -1,0 +1,37 @@
+.formularios {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.entrada {
+  display: grid;
+  gap: 8px;
+}
+
+.entrada label {
+  font-weight: 700;
+  color: #cdf1ff;
+}
+
+.entrada input,
+.entrada select,
+.entrada textarea {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(92, 215, 255, 0.2);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--blanco);
+  padding: 12px 14px;
+}
+
+.entrada textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+@media (max-width: 900px) {
+  .formularios {
+    grid-template-columns: 1fr;
+  }
+}

@@ -47,18 +47,20 @@ $empleados = $conexion->query(
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Personal | quequetech</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../css/Base.css">
+    <link rel="stylesheet" href="../css/Layout.css">
+    <link rel="stylesheet" href="../css/Formularios.css">
 </head>
 <body>
     <header class="encabezado">
         <div class="contenedor">
             <div class="logo">
-                <img src="quequetechlogo.png" alt="Logo quequetech">
+                <img src="../images/ico.png" alt="Logo quequetech">
                 <div class="logo-texto"><strong>quequetech</strong><span>Technologies inc.</span></div>
             </div>
             <nav class="menu">
                 <a href="index.php">Inicio</a>
-                <a href="servicios.html">Servicios</a>
+                <a href="../servicios.html">Servicios</a>
                 <a class="activo" href="personal.php">Personal</a>
                 <a href="acceso.php">Acceso</a>
                 <a href="tareas.php">Tareas</a>

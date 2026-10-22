@@ -3,29 +3,33 @@ require_once __DIR__ . '/conexion.php';
 
 $tareas = $conexion->query(
     'SELECT t.titulo, c.nombre AS cliente, t.responsable, t.estado, t.fecha
-     FROM tareas t
-     INNER JOIN clientes c ON c.id = t.cliente_id
-     ORDER BY t.fecha DESC, t.id DESC'
+    FROM tareas t
+    INNER JOIN clientes c ON c.id = t.cliente_id
+    ORDER BY t.fecha DESC, t.id DESC'
 )->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tareas | quequetech</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../css/Base.css">
+    <link rel="stylesheet" href="../css/Layout.css">
+    <link rel="stylesheet" href="../css/Tareas.css">
 </head>
+
 <body>
     <header class="encabezado">
         <div class="contenedor">
             <div class="logo">
-                <img src="quequetechlogo.png" alt="Logo quequetech">
+                <img src="../images/ico.png" alt="Logo quequetech">
                 <div class="logo-texto"><strong>quequetech</strong><span>Technologies inc.</span></div>
             </div>
             <nav class="menu">
                 <a href="index.php">Inicio</a>
-                <a href="servicios.html">Servicios</a>
+                <a href="../servicios.html">Servicios</a>
                 <a href="personal.php">Personal</a>
                 <a href="acceso.php">Acceso</a>
                 <a class="activo" href="tareas.php">Tareas</a>
@@ -48,7 +52,15 @@ $tareas = $conexion->query(
 
         <div class="tabla-contenedor">
             <table class="tabla">
-                <thead><tr><th>Tarea</th><th>Cliente</th><th>Responsable</th><th>Estado</th><th>Fecha</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th>Tarea</th>
+                        <th>Cliente</th>
+                        <th>Responsable</th>
+                        <th>Estado</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
                 <tbody>
                     <?php foreach ($tareas as $tarea): ?>
                         <?php
@@ -71,27 +83,33 @@ $tareas = $conexion->query(
                         </tr>
                     <?php endforeach; ?>
                     <?php if ($tareas === []): ?>
-                        <tr><td colspan="5">No hay tareas registradas.</td></tr>
+                        <tr>
+                            <td colspan="5">No hay tareas registradas.</td>
+                        </tr>
                     <?php endif; ?>
                 </tbody>
             </table>
         </div>
     </main>
 
-    <footer class="pie"><div class="contenedor"><p>quequetech Technologies inc. • Seguimiento y control de tareas.</p></div></footer>
+    <footer class="pie">
+        <div class="contenedor">
+            <p>quequetech Technologies inc. • Seguimiento y control de tareas.</p>
+        </div>
+    </footer>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const botonesFiltro = document.querySelectorAll('.filtro');
             const filasTareas = document.querySelectorAll('tr[data-estado]');
 
-            botonesFiltro.forEach(function (boton) {
-                boton.addEventListener('click', function () {
+            botonesFiltro.forEach(function(boton) {
+                boton.addEventListener('click', function() {
                     const filtro = boton.dataset.filtro;
-                    botonesFiltro.forEach(function (elemento) {
+                    botonesFiltro.forEach(function(elemento) {
                         elemento.classList.toggle('activo', elemento === boton);
                     });
-                    filasTareas.forEach(function (fila) {
+                    filasTareas.forEach(function(fila) {
                         const estado = fila.dataset.estado;
                         fila.style.display = filtro === 'todos' || estado === filtro ? '' : 'none';
                     });
@@ -100,4 +118,5 @@ $tareas = $conexion->query(
         });
     </script>
 </body>
+
 </html>

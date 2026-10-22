@@ -1,0 +1,11 @@
+.grilla-servicios {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .grilla-servicios {
+    grid-template-columns: 1fr;
+  }
+}
