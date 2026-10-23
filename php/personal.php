@@ -135,6 +135,10 @@ $empleados = $conexion->query(
                 <h3>Registrar empleado</h3>
                 <form method="post" action="personal.php">
                     <div class="entrada">
+                        <label for="nroLegajo">Número de legajo</label>
+                        <input id="nroLegajo" name="nro_legajo" type="text" maxlength="20" required>
+                    </div>
+                    <div class="entrada">
                         <label for="nombre">Nombre</label>
                         <input id="nombre" name="nombre" type="text" maxlength="50" required>
                     </div>
